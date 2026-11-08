@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Native PHP REST API Framework - Architecture & Developer Manual</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 16mm 20mm 16mm;
+            @bottom-right {
+                content: counter(page);
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                font-size: 9pt;
+                color: #64748b;
+            }
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #1e293b;
+            line-height: 1.55;
+            font-size: 10pt;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2, h3, h4 {
+            color: #0f172a;
+            font-weight: 700;
+            margin-top: 1.4em;
+            margin-bottom: 0.5em;
+            page-break-after: avoid;
+        }
+        h1 { font-size: 22pt; line-height: 1.2; margin-top: 0; color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+        h2 { font-size: 14pt; color: #1e40af; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-top: 1.6em; }
+        h3 { font-size: 11pt; color: #334155; }
+        p { margin: 0.5em 0; }
+        code {
+            font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+            background: #f1f5f9;
+            color: #b91c1c;
+            padding: 1.5px 5px;
+            border-radius: 4px;
+            font-size: 8.8pt;
+        }
+        pre {
+            font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-size: 8.2pt;
+            line-height: 1.4;
+            overflow-x: auto;
+            margin: 0.8em 0;
+            page-break-inside: avoid;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            font-size: inherit;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+            font-size: 8.8pt;
+            page-break-inside: avoid;
+        }
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 7px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+        }
+        tr:nth-child(even) { background: #fdfdfd; }
+        .page-break { page-break-before: always; }
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            font-size: 7.5pt;
+            font-weight: 700;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .badge-get { background: #e0f2fe; color: #0369a1; }
+        .badge-post { background: #dcfce7; color: #15803d; }
+        .badge-put { background: #fef3c7; color: #b45309; }
+        .badge-del { background: #fee2e2; color: #b91c1c; }
+        .callout {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 10px 14px;
+            margin: 1em 0;
+            border-radius: 0 6px 6px 0;
+            page-break-inside: avoid;
+        }
+        .callout-title { font-weight: 700; color: #1e40af; margin-bottom: 4px; font-size: 9.5pt; }
+        .callout-warn {
+            background: #fefce8;
+            border-left-color: #eab308;
+        }
+        .callout-warn .callout-title { color: #854d0e; }
+        .flow-diagram {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 1em 0;
+            font-family: monospace;
+            font-size: 8.2pt;
+            line-height: 1.45;
+            white-space: pre;
+            page-break-inside: avoid;
+            color: #1e293b;
+        }
+        .toc {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 1.5em 0;
+        }
+        .toc-title { font-size: 11pt; font-weight: 700; margin-bottom: 8px; color: #0f172a; }
+        .toc-list { list-style: none; padding-left: 0; margin: 0; }
+        .toc-list li { margin: 4px 0; font-size: 9pt; }
+        .toc-list a { text-decoration: none; color: #2563eb; font-weight: 500; }
+        .step-number {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8pt;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cover / Header Section -->
+    <div style="text-align: center; padding: 25px 0 15px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px;">
+        <div style="font-size: 10pt; font-weight: 700; color: #2563eb; letter-spacing: 1.5px; text-transform: uppercase;">Technical Developer Manual</div>
+        <h1 style="border-bottom: none; margin: 10px 0 5px 0; font-size: 24pt;">Native PHP REST API Framework</h1>
+        <div style="font-size: 10.5pt; color: #64748b;">Zero-Dependency Pure PHP 8+ MVC Architecture for Shared & Cloud Hosting</div>
+    </div>
+
+    <div class="toc">
+        <div class="toc-title">Table of Contents</div>
+        <ul class="toc-list">
+            <li><strong>1.</strong> System Architecture & Request Lifecycle Overview</li>
+            <li><strong>2.</strong> Strict MVC Decomposition (Core, Models, Controllers, Middleware, Routes)</li>
+            <li><strong>3.</strong> Database Layer & PDO Prepared Statements</li>
+            <li><strong>4.</strong> Universal Routing, Method Detection, 404 & 405 Handling</li>
+            <li><strong>5.</strong> Universal File & Image Upload System (User Profile Avatar Case Study)</li>
+            <li><strong>6.</strong> Step-by-Step Guide: Adding a New Feature (Which Files to Touch)</li>
+            <li><strong>7.</strong> External Frontend Integration (Fetch API Code Examples)</li>
+            <li><strong>8.</strong> InfinityFree / cPanel Deployment & Security Hardening</li>
+        </ul>
+    </div>
+
+    <!-- Section 1 -->
+    <h2>1. System Architecture & Request Lifecycle Overview</h2>
+    <p>
+        The framework uses <strong>pure native PHP 8+</strong> without Composer, external packages, or command-line build steps. It is architected specifically to run smoothly on shared hosting environments (such as <strong>InfinityFree</strong>, <strong>cPanel</strong>, and local XAMPP/WAMP) where SSH access and terminal commands are unavailable.
+    </p>
+
+    <div class="flow-diagram">
++--------------------------------------------------------------------------------------------------+
+|                                    INCOMING HTTP REQUEST                                         |
+|                       (e.g., POST /api/users, GET /api/users/1, OPTIONS)                         |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 1. Web Server (.htaccess Rewrite)                                                                |
+|    - Intercepts request; hides internal folders (app, config); rewrites URI to index.php         |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 2. Single API Entry Point (index.php)                                                            |
+|    - Registers Native Autoloader (App\Core\Autoloader)                                           |
+|    - Loads configurations (config/app.php, config/database.php)                                  |
+|    - Applies Global Error/Exception Handlers (catches Throwables, returns clean JSON)            |
+|    - Applies CorsMiddleware (handles allowed origins, methods, headers, and OPTIONS preflight)   |
+|    - Tests/Initializes PDO Database Connection                                                   |
+|    - Automatically scans and includes all route files in app/Routes/*.php                        |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 3. Universal Router (app/Core/Router.php)                                                        |
+|    - Normalizes request path (strips base directories / subfolders automatically)                |
+|    - Resolves dynamic parameters (e.g. /api/users/{id} -> extracts id = "1")                     |
+|    - If route matches path & method -> Dispatches to [ControllerClass, 'actionMethod']           |
+|    - If route matches path but NOT method -> Sends 405 Method Not Allowed + Allow header         |
+|    - If no route matches -> Sends 404 Endpoint Not Found                                         |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 4. Controller Layer (app/Controllers/UserController.php)                                         |
+|    - Receives Request object ($this->request->getBody(), $this->request->file('avatar'))        |
+|    - Validates inputs (required, email, min, max, integer)                                       |
+|    - Performs business validation (checks for email duplicates, existing records)               |
+|    - Invokes Model methods (User::findById, User::create, User::update, etc.)                    |
+|    - Invokes Universal Uploader when processing file/image uploads                               |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 5. Model Layer (app/Models/User.php extends app/Core/Model.php)                                  |
+|    - Executes pure SQL using PDO Prepared Statements (:name, :email, :id)                        |
+|    - Returns clean associative arrays or booleans (NEVER contains HTTP or presentation logic)   |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 6. Standardized Response (app/Core/Response.php)                                                 |
+|    - Sets HTTP status code (200, 201, 400, 404, 405, 422, 500)                                  |
+|    - Emits Content-Type: application/json; charset=UTF-8                                         |
+|    - Outputs unified JSON payload: { "success": true/false, "message": "...", "data": ... }      |
++--------------------------------------------------------------------------------------------------+
+    </div>
+
+    <!-- Section 2 -->
+    <div class="page-break"></div>
+    <h2>2. Strict MVC Decomposition</h2>
+    <p>
+        The framework follows a strict <strong>Model-View-Controller (MVC)</strong> separation adapted for headless REST APIs (where the "View" is represented by standardized JSON responses):
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 18%;">Layer</th>
+                <th style="width: 30%;">Directory & Key Files</th>
+                <th>Responsibilities & Rules</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Core Framework</strong></td>
+                <td>
+                    <code>app/Core/Autoloader.php</code><br>
+                    <code>app/Core/Router.php</code><br>
+                    <code>app/Core/Request.php</code><br>
+                    <code>app/Core/Response.php</code><br>
+                    <code>app/Core/Database.php</code><br>
+                    <code>app/Core/Uploader.php</code>
+                </td>
+                <td>
+                    Foundational engine of the framework. Handles class autoloading, URL routing, HTTP request abstractions, JSON serialization, database connection pooling, and secure file uploading. Classes in this layer are reusable and framework-wide.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Models</strong></td>
+                <td>
+                    <code>app/Core/Model.php</code><br>
+                    <code>app/Models/User.php</code>
+                </td>
+                <td>
+                    <strong>Data persistence only.</strong> Interacts directly with the MySQL database via PDO prepared statements. Handles CRUD operations. <em>Strict Rule:</em> Models must <u>never</u> read <code>$_POST</code>/<code>$_GET</code> directly, and must <u>never</u> call <code>header()</code>, <code>echo</code>, or <code>exit</code>.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Controllers</strong></td>
+                <td>
+                    <code>app/Core/Controller.php</code><br>
+                    <code>app/Controllers/UserController.php</code>
+                </td>
+                <td>
+                    <strong>Coordination and business logic.</strong> Reads input via <code>$this->request</code>, validates data according to rules, calls Models, handles error conditions, and invokes <code>$this->success()</code> or <code>$this->error()</code>. <em>Strict Rule:</em> Controllers must <u>never</u> contain raw SQL queries.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Middleware</strong></td>
+                <td><code>app/Middleware/CorsMiddleware.php</code></td>
+                <td>
+                    <strong>Request pipeline filters.</strong> Executes before controllers to set CORS headers (<code>Access-Control-Allow-Origin</code>, etc.) and intercept HTTP <code>OPTIONS</code> preflight requests.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Routes</strong></td>
+                <td>
+                    <code>app/Routes/users.php</code><br>
+                    <code>app/Routes/*.php</code>
+                </td>
+                <td>
+                    <strong>Declarative mapping only.</strong> Maps HTTP methods and URL paths to Controller actions. Contains zero business or database logic.
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Configuration</strong></td>
+                <td>
+                    <code>config/app.php</code><br>
+                    <code>config/database.php</code>
+                </td>
+                <td>
+                    Centralized environment variables, database credentials, timezone, and CORS rules.
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Section 3 -->
+    <h2>3. Database Layer & PDO Prepared Statements</h2>
+    <p>
+        Database access is managed through <code>App\Core\Database</code> and <code>App\Core\Model</code> using PHP's native <strong>PDO (PHP Data Objects)</strong> extension.
+    </p>
+
+    <div class="callout">
+        <div class="callout-title">Database Singleton Pattern</div>
+        <code>Database::getConnection()</code> caches the <code>PDO</code> instance statically. This guarantees that regardless of how many models are instantiated during a single HTTP request, only one physical database connection is opened to MySQL, preventing resource exhaustion on shared hosting.
+    </div>
+
+    <h3>Prepared Statements Protection</h3>
+    <p>
+        The base model enforces prepared statements for all database interactions. Input variables are bound as parameters rather than concatenated directly into SQL strings, completely preventing SQL Injection:
+    </p>
+
+    <pre><code>// In app/Core/Model.php
+protected function query(string $sql, array $params = []): PDOStatement
+{
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($params);
+    return $stmt;
+}
+
+// In app/Models/User.php
+public function findById(int $id): ?array
+{
+    $sql = "SELECT id, name, email, avatar, created_at FROM {$this->table} WHERE id = :id LIMIT 1";
+    return $this->fetchOne($sql, ['id' => $id]);
+}</code></pre>
+
+    <!-- Section 4 -->
+    <div class="page-break"></div>
+    <h2>4. Universal Routing, Method Detection, 404 & 405 Handling</h2>
+
+    <p>
+        The universal router in <code>app/Core/Router.php</code> provides expressive, declarative route registration:
+    </p>
+
+    <pre><code>$router->get('/api/users', [UserController::class, 'index']);
+$router->post('/api/users', [UserController::class, 'store']);
+$router->get('/api/users/{id}', [UserController::class, 'show']);
+$router->put('/api/users/{id}', [UserController::class, 'update']);
+$router->post('/api/users/{id}/avatar', [UserController::class, 'uploadAvatar']);
+$router->delete('/api/users/{id}', [UserController::class, 'destroy']);</code></pre>
+
+    <h3>Dynamic Parameter Matching Mechanism</h3>
+    <p>
+        When routes are registered, patterns with placeholders like <code>{id}</code> are converted into named regular expression capture groups:
+    </p>
+    <ul>
+        <li><code>/api/users/{id}</code> &rarr; <code>#^/api/users/(?P&lt;id&gt;[^/]+)$#</code></li>
+        <li>When a request for <code>/api/users/42</code> arrives, the router matches the regex, extracts <code>$params['id'] = '42'</code>, and calls:
+            <pre><code>call_user_func_array([$controller, $method], array_values($params)); // calls show('42')</code></pre>
+        </li>
+    </ul>
+
+    <h3>Subfolder Auto-Detection</h3>
+    <p>
+        <code>Request::getPath()</code> inspects <code>$_SERVER['SCRIPT_NAME']</code>. If the application is hosted in a subfolder such as <code>http://localhost/my-api/</code> or <code>https://example.com/~username/api/</code>, the base directory is automatically stripped before matching against routes. No hardcoded paths are required.
+    </p>
+
+    <h3>404 vs 405 Protocol Compliance</h3>
+    <ul>
+        <li><strong>405 Method Not Allowed:</strong> If a client sends a <code>POST</code> request to an endpoint registered only for <code>GET</code>, the router scans all routes. It identifies that the URL exists under other methods, sets the standard HTTP <code>Allow: GET, OPTIONS</code> header, and returns a 405 JSON response.</li>
+        <li><strong>404 Endpoint Not Found:</strong> If the requested URL matches no registered route under any HTTP method, the router returns a clean 404 JSON response.</li>
+    </ul>
+
+    <!-- Section 5 -->
+    <h2>5. Universal File & Image Upload System</h2>
+    <p>
+        The framework includes a standalone, production-ready upload engine in <code>app/Core/Uploader.php</code>. It handles file validation, secure naming, folder creation, and old file cleanup.
+    </p>
+
+    <h3>Upload Security Architecture</h3>
+    <div class="flow-diagram">
++--------------------------------------------------------------------------------------------------+
+| Client uploads file via multipart/form-data (key: "avatar")                                      |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 1. Error Code Verification: Checks $_FILES['avatar']['error'] === UPLOAD_ERR_OK                  |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 2. File Size Check: Verifies file size is within limits (default: 5MB)                            |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 3. Deep MIME Verification: Uses PHP's native finfo_file() on temp file                           |
+|    - NEVER trusts the user-supplied $_FILES['type'] or file extension                             |
+|    - Matches actual binary signature against allowed MIME types (e.g., image/jpeg, image/png)    |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 4. Cryptographic Filename Generation:                                                            |
+|    - Generates 32-character random hex string + timestamp: bin2hex(random_bytes(16)) . '_' . time|
+|    - Completely prevents filename collisions and directory traversal attacks (../../)             |
++--------------------------------------------------------------------------------------------------+
+                                                 |
+                                                 v
++--------------------------------------------------------------------------------------------------+
+| 5. Storage & Cleanup:                                                                            |
+|    - Moves file to destination: move_uploaded_file(...)                                          |
+|    - Deletes previous avatar if user is replacing an existing image: Uploader::delete($oldPath)  |
+|    - Updates database with relative path: uploads/avatars/4f8b2c9...jpg                          |
++--------------------------------------------------------------------------------------------------+
+    </div>
+
+    <div class="page-break"></div>
+    <h3>Reusable Uploader API Reference</h3>
+    <p>
+        The <code>Uploader</code> can be called from any controller for any entity (Users, Products, Documents, etc.):
+    </p>
+
+    <pre><code>// 1. Uploading an Image (Max 5MB)
+$result = App\Core\Uploader::upload(
+    $this->request->file('avatar'),     // $_FILES array
+    'uploads/avatars',                  // Target directory
+    App\Core\Uploader::IMAGE_TYPES,     // Allowed types: jpg, png, webp, gif
+    5242880                             // 5MB limit
+);
+
+if ($result['success']) {
+    $relativePath = $result['relative_path']; // e.g. "uploads/avatars/d83f...jpg"
+} else {
+    $errorMessage = $result['error'];
+}
+
+// 2. Deleting an Outdated File
+App\Core\Uploader::delete($oldAvatarPath);</code></pre>
+
+    <!-- Section 6 -->
+    <h2>6. Step-by-Step Guide: Adding a New Feature (Which Files to Touch)</h2>
+    <p>
+        Because the framework follows strict MVC and automatically discovers routes, adding a new feature requires touching <strong>exactly four files</strong> without ever editing <code>index.php</code> or the Core files.
+    </p>
+
+    <p><strong>Example: Adding a "Products" API with Image Upload</strong></p>
+
+    <h3><span class="step-number">1</span> Create Database Table (<code>database.sql</code>)</h3>
+    <p>Create the database table in MySQL / phpMyAdmin:</p>
+    <pre><code>CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;</code></pre>
+
+    <h3><span class="step-number">2</span> Create Model: <code>app/Models/Product.php</code></h3>
+    <p>Create the Model class. It inherits all database helpers from <code>App\Core\Model</code>:</p>
+    <pre><code>&lt;?php
+
+namespace App\Models;
+
+use App\Core\Model;
+
+class Product extends Model
+{
+    protected string $table = 'products';
+
+    public function all(): array
+    {
+        return $this->fetchAll("SELECT * FROM {$this->table} ORDER BY id DESC");
+    }
+
+    public function findById(int $id): ?array
+    {
+        return $this->fetchOne("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1", ['id' => $id]);
+    }
+
+    public function create(array $data): int
+    {
+        $sql = "INSERT INTO {$this->table} (name, price, image) VALUES (:name, :price, :image)";
+        $this->execute($sql, [
+            'name'  => $data['name'],
+            'price' => $data['price'],
+            'image' => $data['image'] ?? null,
+        ]);
+        return (int)$this->lastInsertId();
+    }
+}</code></pre>
+
+    <div class="page-break"></div>
+    <h3><span class="step-number">3</span> Create Controller: <code>app/Controllers/ProductController.php</code></h3>
+    <p>Create the Controller class to handle requests, validate inputs, and return responses:</p>
+    <pre><code>&lt;?php
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Request;
+use App\Core\Uploader;
+use App\Models\Product;
+
+class ProductController extends Controller
+{
+    private Product $productModel;
+
+    public function __construct(?Request $request = null)
+    {
+        parent::__construct($request);
+        $this->productModel = new Product();
+    }
+
+    public function index(): void
+    {
+        $products = $this->productModel->all();
+        $this->success($products, 'Products retrieved successfully');
+    }
+
+    public function store(): void
+    {
+        $input = $this->request->getBody();
+
+        // 1. Validate
+        $errors = $this->validate($input, [
+            'name'  => 'required|min:2|max:150',
+            'price' => 'required|numeric',
+        ]);
+
+        if (!empty($errors)) {
+            $this->error('Validation failed', 422, ['errors' => $errors]);
+            return;
+        }
+
+        // 2. Optional Image Upload
+        $imagePath = null;
+        if ($this->request->hasFile('image')) {
+            $upload = Uploader::upload($this->request->file('image'), 'uploads/products');
+            if (!$upload['success']) {
+                $this->error($upload['error'], 422);
+                return;
+            }
+            $imagePath = $upload['relative_path'];
+        }
+
+        // 3. Save via Model
+        $id = $this->productModel->create([
+            'name'  => $input['name'],
+            'price' => $input['price'],
+            'image' => $imagePath,
+        ]);
+
+        $newProduct = $this->productModel->findById($id);
+        $this->success($newProduct, 'Product created successfully', 201);
+    }
+}</code></pre>
+
+    <h3><span class="step-number">4</span> Create Route File: <code>app/Routes/products.php</code></h3>
+    <p>Create a new route file in <code>app/Routes/</code>:</p>
+    <pre><code>&lt;?php
+
+use App\Controllers\ProductController;
+
+/** @var \App\Core\Router $router */
+$router->get('/api/products', [ProductController::class, 'index']);
+$router->post('/api/products', [ProductController::class, 'store']);</code></pre>
+
+    <div class="callout">
+        <div class="callout-title">Automatic Route Activation</div>
+        Because <code>index.php</code> automatically scans <code>app/Routes/*.php</code> using <code>glob()</code>, your new endpoints (<code>GET /api/products</code> and <code>POST /api/products</code>) are immediately active! You do not need to edit <code>index.php</code> or restart any service.
+    </div>
+
+    <!-- Section 7 -->
+    <div class="page-break"></div>
+    <h2>7. External Frontend Integration (JavaScript Fetch API)</h2>
+    <p>
+        Below are clean JavaScript examples demonstrating how external web applications (React, Vue, Angular, or Vanilla JS) communicate with the API:
+    </p>
+
+    <h3>1. GET All Users</h3>
+    <pre><code>const response = await fetch('http://localhost/my-api/api/users');
+const result = await response.json();
+console.log(result.data); // Array of user objects</code></pre>
+
+    <h3>2. GET Single User by ID</h3>
+    <pre><code>const response = await fetch('http://localhost/my-api/api/users/1');
+const result = await response.json();
+if (response.ok) {
+    console.log(result.data); // User object
+} else {
+    console.error(result.message); // e.g. "User not found"
+}</code></pre>
+
+    <h3>3. POST Create User (JSON Payload)</h3>
+    <pre><code>const response = await fetch('http://localhost/my-api/api/users', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+        name: 'Sarah Connor',
+        email: 'sarah@example.com'
+    })
+});
+const result = await response.json();
+console.log('Created User ID:', result.data.id);</code></pre>
+
+    <h3>4. PUT Update User Profile</h3>
+    <pre><code>const response = await fetch('http://localhost/my-api/api/users/1', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        name: 'Sarah Connor-Reese'
+    })
+});
+const result = await response.json();
+console.log('Updated:', result.data);</code></pre>
+
+    <h3>5. POST Upload Avatar Image (Multipart FormData)</h3>
+    <pre><code>// Note: Do NOT set 'Content-Type': 'multipart/form-data' header manually.
+// The browser sets it automatically with the correct multipart boundary.
+const fileInputElement = document.querySelector('#avatarInput');
+const formData = new FormData();
+formData.append('avatar', fileInputElement.files[0]);
+
+const response = await fetch('http://localhost/my-api/api/users/1/avatar', {
+    method: 'POST',
+    body: formData
+});
+const result = await response.json();
+console.log('New Avatar URL:', result.data.upload.url);</code></pre>
+
+    <h3>6. DELETE User</h3>
+    <pre><code>const response = await fetch('http://localhost/my-api/api/users/1', {
+    method: 'DELETE'
+});
+const result = await response.json();
+console.log('Deleted status:', result.success);</code></pre>
+
+    <!-- Section 8 -->
+    <div class="page-break"></div>
+    <h2>8. InfinityFree / cPanel Deployment & Security Hardening</h2>
+
+    <h3>Deployment Step-by-Step</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 25%;">Step</th>
+                <th style="width: 35%;">Action in cPanel / InfinityFree</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>1. Create Database</strong></td>
+                <td>Open <strong>MySQL Databases</strong> in vPanel. Create a new database name.</td>
+                <td>Note the MySQL Hostname (e.g. <code>sql300.infinityfree.com</code>), Database Name, Username, and Password.</td>
+            </tr>
+            <tr>
+                <td><strong>2. Import Schema</strong></td>
+                <td>Open <strong>phpMyAdmin</strong>, select your database, click <strong>Import</strong>, and upload <code>database.sql</code>.</td>
+                <td>Creates the <code>users</code> table with proper constraints and indexes.</td>
+            </tr>
+            <tr>
+                <td><strong>3. Configure Credentials</strong></td>
+                <td>Open <code>config/database.php</code> and fill in your remote MySQL credentials.</td>
+                <td>Set <code>'debug' =&gt; false</code> in <code>config/app.php</code> for production environments.</td>
+            </tr>
+            <tr>
+                <td><strong>4. Upload Files</strong></td>
+                <td>Using <strong>cPanel File Manager</strong> or FTP (FileZilla), upload the entire folder into <code>htdocs/</code> (or <code>public_html/</code>).</td>
+                <td>Ensure hidden files like <code>.htaccess</code> are transferred.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Security Hardening Features Included</h3>
+    <ul>
+        <li><strong>Sensitive Directory Shielding:</strong> In the root <code>.htaccess</code>, direct HTTP access to internal PHP directories (<code>app/</code> and <code>config/</code>) is blocked with an HTTP 403 Forbidden rule:
+            <pre><code>RewriteRule ^(app|config)/.*$ - [F,L]</code></pre>
+        </li>
+        <li><strong>Upload Folder Execution Lock:</strong> The <code>uploads/.htaccess</code> file completely forbids the execution of PHP or script files inside the uploads directory:
+            <pre><code>&lt;FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|cgi|pl|exe)$"&gt;
+    Require all denied
+&lt;/FilesMatch&gt;
+Options -Indexes -ExecCGI</code></pre>
+            Even if an attacker bypasses application-level MIME checks, Apache refuses to execute any uploaded script.
+        </li>
+        <li><strong>Information Disclosure Shielding:</strong> When <code>'debug' =&gt; false</code> in <code>config/app.php</code>, database errors and internal exceptions log silently to the server error log, presenting a clean <code>"Internal Server Error"</code> response to API consumers with zero exposed credentials or stack traces.</li>
+        <li><strong>Authorization Header FastCGI Fix:</strong> Apache shared hosting commonly strips the HTTP <code>Authorization</code> header before passing requests to PHP. The root <code>.htaccess</code> automatically forwards the authorization header into the PHP environment:
+            <pre><code>RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]</code></pre>
+        </li>
+    </ul>
+
+    <div style="margin-top: 30px; padding: 15px; border-top: 2px solid #e2e8f0; text-align: center; color: #64748b; font-size: 8.5pt;">
+        Native PHP REST API Framework &bull; Architecture & Developer Manual &bull; Generated for Pure PHP 8+ Shared Hosting Deployment
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Pass Authorization header to PHP in CGI/FastCGI environments
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Block direct web access to sensitive application code and config folders
+    RewriteRule ^(app|config)/.*$ - [F,L]
+
+    # Route all non-existing files and folders to the single API entry point
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>

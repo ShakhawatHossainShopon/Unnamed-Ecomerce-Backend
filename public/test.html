@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API Test Client</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+        }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        h1 { margin-bottom: 0.5rem; }
+        p { color: #64748b; margin-top: 0; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+        button { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+        button:hover { background: var(--primary-hover); }
+        button.danger { background: var(--danger); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+        input { width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.95rem; }
+        pre { background: #0f172a; color: #38bdf8; padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; min-height: 120px; }
+        .status { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.8rem; font-weight: bold; }
+        .status-ok { background: #dcfce7; color: var(--success); }
+        .status-err { background: #fee2e2; color: var(--danger); }
+    </style>
+</head>
+<body>
+    <h1>API Test Client</h1>
+    <p>Interact with the Native PHP REST API endpoints directly from your browser.</p>
+
+    <div class="card">
+        <h3>API Base URL</h3>
+        <input type="text" id="apiBase" value="../api/users">
+    </div>
+
+    <div class="card">
+        <h3>1. List All Users</h3>
+        <button onclick="getAllUsers()">GET /api/users</button>
+    </div>
+
+    <div class="card">
+        <h3>2. Get User By ID</h3>
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="getId" placeholder="User ID (e.g. 1)" style="max-width: 150px;">
+            <button onclick="getUserById()">GET /api/users/{id}</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>3. Create User</h3>
+        <div class="grid">
+            <input type="text" id="postName" placeholder="Full Name (e.g. Alice Wonderland)">
+            <input type="email" id="postEmail" placeholder="Email (e.g. alice@example.com)">
+        </div>
+        <button onclick="createUser()">POST /api/users</button>
+    </div>
+
+    <div class="card">
+        <h3>4. Update User</h3>
+        <div class="grid">
+            <input type="number" id="putId" placeholder="User ID to update">
+            <input type="text" id="putName" placeholder="New Name">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <input type="email" id="putEmail" placeholder="New Email">
+        </div>
+        <button onclick="updateUser()">PUT /api/users/{id}</button>
+    </div>
+
+    <div class="card">
+        <h3>5. Upload User Avatar (Image Upload)</h3>
+        <div class="grid">
+            <input type="number" id="avatarUserId" placeholder="User ID">
+            <input type="file" id="avatarFile" accept="image/*">
+        </div>
+        <button onclick="uploadAvatar()">POST /api/users/{id}/avatar</button>
+    </div>
+
+    <div class="card">
+        <h3>6. Delete User</h3>
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="deleteId" placeholder="User ID to delete" style="max-width: 150px;">
+            <button class="danger" onclick="deleteUser()">DELETE /api/users/{id}</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Response Output</h3>
+        <div id="statusBadge"></div>
+        <pre id="output">// Results will appear here...</pre>
+    </div>
+
+    <script>
+        function getBase() {
+            return document.getElementById('apiBase').value.replace(/\/$/, '');
+        }
+
+        function displayResponse(status, data) {
+            const badge = document.getElementById('statusBadge');
+            const output = document.getElementById('output');
+            
+            badge.innerHTML = `<span class="status ${status >= 200 && status < 300 ? 'status-ok' : 'status-err'}">HTTP ${status}</span>`;
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // 1. GET all users
+        async function getAllUsers() {
+            try {
+                const res = await fetch(getBase());
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+
+        // 2. GET user by ID
+        async function getUserById() {
+            const id = document.getElementById('getId').value;
+            if (!id) return alert('Please enter an ID');
+            try {
+                const res = await fetch(`${getBase()}/${id}`);
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+
+        // 3. POST create user
+        async function createUser() {
+            const name = document.getElementById('postName').value;
+            const email = document.getElementById('postEmail').value;
+            try {
+                const res = await fetch(getBase(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+
+        // 4. PUT update user
+        async function updateUser() {
+            const id = document.getElementById('putId').value;
+            const name = document.getElementById('putName').value;
+            const email = document.getElementById('putEmail').value;
+            if (!id) return alert('Please enter an ID to update');
+
+            const payload = {};
+            if (name) payload.name = name;
+            if (email) payload.email = email;
+
+            try {
+                const res = await fetch(`${getBase()}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+
+        // 5. Upload Avatar
+        async function uploadAvatar() {
+            const id = document.getElementById('avatarUserId').value;
+            const fileInput = document.getElementById('avatarFile');
+            if (!id) return alert('Please enter user ID');
+            if (!fileInput.files || fileInput.files.length === 0) return alert('Please select an image file');
+
+            const formData = new FormData();
+            formData.append('avatar', fileInput.files[0]);
+
+            try {
+                const res = await fetch(`${getBase()}/${id}/avatar`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+
+        // 6. DELETE user
+        async function deleteUser() {
+            const id = document.getElementById('deleteId').value;
+            if (!id) return alert('Please enter an ID to delete');
+            try {
+                const res = await fetch(`${getBase()}/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                displayResponse(res.status, data);
+            } catch (err) {
+                displayResponse(500, { error: err.message });
+            }
+        }
+    </script>
+</body>
+</html>

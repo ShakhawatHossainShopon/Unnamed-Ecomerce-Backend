@@ -1,0 +1,16 @@
+# Public directory access configuration
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Pass Authorization header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # If requested file or directory exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ ../index.php [QSA,L]
+</IfModule>
